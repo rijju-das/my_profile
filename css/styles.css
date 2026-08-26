@@ -99,12 +99,6 @@ button { color: inherit; font: inherit; }
 .orbit-node.node-one { top: 6%; left: 20%; }
 .orbit-node.node-two { top: 48%; right: -3%; }
 .orbit-node.node-three { bottom: 6%; left: 16%; }
-.coordinate-card { position: absolute; z-index: 3; right: -2%; bottom: 3%; display: flex; align-items: center; gap: .45rem; padding: .65rem; background: var(--white); border: 1px solid var(--ink); transform: rotate(-2deg); box-shadow: 6px 6px 0 var(--gold); }
-.coordinate-card > span { font: 500 .5rem var(--mono); writing-mode: vertical-rl; }
-.coordinate-plane { position: relative; width: 85px; aspect-ratio: 1; background: linear-gradient(90deg, transparent 49.5%, var(--line) 50%, transparent 50.5%), linear-gradient(transparent 49.5%, var(--line) 50%, transparent 50.5%); border: 1px solid var(--line); }
-.coordinate-plane::after { content: ""; position: absolute; width: 11px; height: 11px; top: 22%; right: 20%; border-radius: 50%; background: var(--coral); }
-.coordinate-plane i { position: absolute; width: 9px; height: 9px; bottom: 26%; left: 23%; border-radius: 50%; background: var(--violet); }
-.coordinate-plane b { position: absolute; width: 7px; height: 7px; top: 55%; right: 33%; border-radius: 50%; background: var(--mint); }
 
 .statement-band { overflow: hidden; border-block: 1px solid var(--ink); background: #c9f17a; }
 .marquee { display: flex; width: max-content; animation: marquee 25s linear infinite; }
@@ -268,7 +262,7 @@ button { color: inherit; font: inherit; }
   .hero h1 { font-size: clamp(3.25rem, 16vw, 5.4rem); }
   .hero-visual { min-height: 440px; }
   .hero-facts { grid-template-columns: 1fr; }
-  .coordinate-card { right: 0; }.portrait-label { right: -1rem; }
+  .portrait-label { right: -1rem; }
   .split-heading, .atlas-panel, .project-grid, .contact { grid-template-columns: 1fr; }
   .atlas-tabs { grid-template-columns: 1fr; }.atlas-tab { border-right: 0; border-bottom: 1px solid; }.atlas-tab:last-child { border-bottom: 0; }
   .atlas-panel { gap: 2rem; }.atlas-diagram { min-height: 210px; padding: 1rem; }
@@ -284,7 +278,7 @@ button { color: inherit; font: inherit; }
 }
 
 @media (max-width: 500px) {
-  .hero-visual { min-height: 380px; }.coordinate-card { display: none; }.signal-orbit { inset: 2% 0; }
+  .hero-visual { min-height: 380px; }.signal-orbit { inset: 2% 0; }
   .recognition-grid { grid-template-columns: 1fr; }.recognition-card, .recognition-card:nth-child(2) { border-right: 0; border-bottom: 1px solid; }.recognition-card:last-child { border-bottom: 0; }
   .project-meta { flex-direction: column; gap: .25rem; }
   .publication-row { grid-template-columns: 1fr 32px; }.pub-year { grid-column: 1 / -1; }
