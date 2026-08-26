@@ -148,10 +148,6 @@ button { color: inherit; font: inherit; }
 .project-copy > p { color: var(--muted); }
 .project-footer { display: flex; align-items: end; justify-content: space-between; gap: 1rem; margin-top: auto; }
 .project-footer > a { flex: 0 0 auto; border-bottom: 1px solid; font-weight: 700; font-size: .75rem; }
-.project-text-card { min-height: 500px; position: relative; overflow: hidden; background: var(--gold); }
-.project-text-card::before { content: ""; position: absolute; width: 300px; height: 300px; right: -80px; top: -90px; border: 1px solid; border-radius: 50%; box-shadow: 0 0 0 35px rgba(21,36,30,.08), 0 0 0 70px rgba(21,36,30,.06); }
-.project-number { padding: 1.5rem; font: 500 .65rem var(--mono); }
-.project-text-card .project-copy { justify-content: flex-end; z-index: 1; }
 .more-work { display: grid; grid-template-columns: .35fr 1fr; gap: 2rem; margin-top: 5rem; border-top: 1px solid var(--ink); }
 .more-work > p { margin: 0; padding-top: 1.2rem; font: 500 .64rem var(--mono); text-transform: uppercase; }
 .more-work a { display: grid; grid-template-columns: 1fr .8fr auto; gap: 1rem; align-items: center; padding: 1.2rem 0; border-bottom: 1px solid var(--line); transition: padding .2s ease; }
@@ -244,7 +240,7 @@ button { color: inherit; font: inherit; }
   .split-heading, .atlas-panel, .project-grid, .contact { grid-template-columns: 1fr; }
   .atlas-tabs { grid-template-columns: 1fr; }.atlas-tab { border-right: 0; border-bottom: 1px solid; }.atlas-tab:last-child { border-bottom: 0; }
   .atlas-panel { gap: 2rem; }.atlas-figure > a { min-height: 220px; }
-  .project-featured { display: flex; }.project-visual { min-height: 250px; padding: 1rem; }.project-text-card { min-height: 420px; }
+  .project-featured { display: flex; }.project-visual { min-height: 250px; padding: 1rem; }
   .project-footer { align-items: flex-start; flex-direction: column; }
   .more-work { grid-template-columns: 1fr; }.more-work > p { padding-top: 1rem; }.more-work a { grid-template-columns: 1fr auto; }.more-work a span { grid-column: 1; grid-row: 2; }
   .publication-row { grid-template-columns: 52px 1fr 32px; gap: .8rem; }.publication-row > a { width: 32px; height: 32px; }
