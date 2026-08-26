@@ -186,18 +186,18 @@ button { color: inherit; font: inherit; }
 .education-card span { font: 500 .56rem var(--mono); color: var(--mint); text-transform: uppercase; }
 .education-card h3 { margin: .2rem 0; font: 400 1.35rem var(--serif); }
 .education-card p, .funding-card p { margin: .3rem 0; color: rgba(244,241,232,.66); font-size: .72rem; }
-.funding-card { color: var(--ink); background: #e8dec2; border-color: #e8dec2; }
-.funding-marks { display: flex; gap: .65rem; align-items: stretch; margin-bottom: 1.4rem; }
-.teqip-mark, .npiu-mark { min-height: 58px; border: 1px solid rgba(21,36,30,.18); background: rgba(255,255,255,.75); }
-.teqip-mark { width: 122px; overflow: hidden; display: grid; place-items: center; }
-.teqip-mark img { width: 122px; max-width: none; transform: scale(1.5); mix-blend-mode: normal; }
-.npiu-mark { flex: 1; display: flex; align-items: center; gap: .65rem; padding: .55rem .7rem; }
-.npiu-mark b { font: 700 1.2rem var(--sans); letter-spacing: -.03em; }
-.npiu-mark span { font: 500 .47rem/1.25 var(--mono); letter-spacing: .04em; text-transform: uppercase; }
-.funding-card .mono-label { color: rgba(21,36,30,.68); }
+.funding-card { color: var(--paper); background: #21352c; border-color: rgba(244,241,232,.18); }
+.funding-marks { display: flex; gap: .5rem; align-items: stretch; margin-bottom: 1.1rem; }
+.teqip-mark, .npiu-mark { min-height: 40px; border: 1px solid rgba(244,241,232,.13); background: rgba(244,241,232,.9); }
+.teqip-mark { width: 84px; overflow: hidden; display: grid; place-items: center; }
+.teqip-mark img { width: 84px; max-width: none; transform: scale(1.5); mix-blend-mode: normal; }
+.npiu-mark { flex: 0 1 112px; display: flex; align-items: center; gap: .4rem; padding: .35rem .45rem; color: var(--ink); }
+.npiu-mark b { font: 700 .82rem var(--sans); letter-spacing: -.03em; }
+.npiu-mark span { font: 500 .34rem/1.2 var(--mono); letter-spacing: .025em; text-transform: uppercase; }
+.funding-card .mono-label { color: var(--mint); }
 .funding-card h3 { margin: 1.1rem 0 .8rem; font: 400 1.35rem/1.1 var(--serif); }
-.funding-card p { margin-top: .7rem; color: rgba(21,36,30,.72); }
-.funding-card p strong, .funding-card p b { color: var(--ink); }
+.funding-card p { margin-top: .7rem; color: rgba(244,241,232,.66); }
+.funding-card p strong, .funding-card p b { color: var(--paper); }
 
 .recognition-grid { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--ink); }
 .recognition-card { min-height: 290px; padding: 1.5rem; display: flex; flex-direction: column; border-right: 1px solid var(--ink); background: var(--white); }
