@@ -137,9 +137,9 @@ button { color: inherit; font: inherit; }
 .project-card[data-accent="violet"] .project-visual { background: color-mix(in srgb, var(--violet) 28%, var(--paper)); }
 .project-card[data-accent="mint"] .project-visual { background: color-mix(in srgb, var(--mint) 38%, var(--paper)); }
 .project-card[data-accent="coral"] .project-visual { background: color-mix(in srgb, var(--coral) 22%, var(--paper)); }
-.project-visual-art { padding: 0; background: var(--paper); }
-.project-visual-art img { width: 100%; max-height: none; height: 100%; object-fit: cover; mix-blend-mode: normal; }
 .project-visual img { max-height: 380px; object-fit: contain; mix-blend-mode: multiply; transition: transform .55s ease; }
+.project-visual-source { padding: clamp(.7rem, 1.6vw, 1.25rem); background: #fff !important; }
+.project-visual-source img { width: 100%; max-height: none; height: 100%; object-fit: contain; mix-blend-mode: normal; }
 .project-card:hover .project-visual img { transform: scale(1.035); }
 .project-visual > span { position: absolute; right: 1rem; bottom: 1rem; padding: .45rem .7rem; background: var(--ink); color: var(--paper); font: 500 .6rem var(--mono); text-transform: uppercase; }
 .project-copy { display: flex; flex-direction: column; flex: 1; padding: clamp(1.5rem, 3vw, 2.5rem); }
