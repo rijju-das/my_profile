@@ -137,14 +137,8 @@ button { color: inherit; font: inherit; }
 .project-card[data-accent="violet"] .project-visual { background: color-mix(in srgb, var(--violet) 28%, var(--paper)); }
 .project-card[data-accent="mint"] .project-visual { background: color-mix(in srgb, var(--mint) 38%, var(--paper)); }
 .project-card[data-accent="coral"] .project-visual { background: color-mix(in srgb, var(--coral) 22%, var(--paper)); }
-.project-visual-concept { position: relative; overflow: hidden; grid-template-rows: 1fr auto; }
-.project-visual-concept::before, .project-visual-concept::after { content: ""; position: absolute; border: 1px solid rgba(21,36,30,.32); border-radius: 50%; }
-.project-visual-concept::before { width: 360px; height: 360px; left: -80px; top: -110px; box-shadow: 0 0 0 45px rgba(21,36,30,.05), 0 0 0 90px rgba(21,36,30,.035); }
-.project-visual-concept::after { width: 170px; height: 170px; right: -35px; bottom: -55px; }
-.concept-mark { z-index: 1; display: grid; justify-items: center; gap: .9rem; padding: 2.5rem; text-align: center; border: 1px solid var(--ink); background: rgba(244,241,232,.72); backdrop-filter: blur(5px); transform: rotate(-2deg); box-shadow: 9px 9px 0 var(--ink); }
-.concept-mark strong { font: 400 clamp(3.5rem, 7vw, 7rem)/.8 var(--serif); letter-spacing: -.055em; }
-.concept-mark span, .project-visual-concept > p { font: 500 .58rem var(--mono); letter-spacing: .1em; text-transform: uppercase; }
-.project-visual-concept > p { z-index: 1; margin: 1.5rem 0 0; }
+.project-visual-art { padding: 0; background: var(--paper); }
+.project-visual-art img { width: 100%; max-height: none; height: 100%; object-fit: cover; mix-blend-mode: normal; }
 .project-visual img { max-height: 380px; object-fit: contain; mix-blend-mode: multiply; transition: transform .55s ease; }
 .project-card:hover .project-visual img { transform: scale(1.035); }
 .project-visual > span { position: absolute; right: 1rem; bottom: 1rem; padding: .45rem .7rem; background: var(--ink); color: var(--paper); font: 500 .6rem var(--mono); text-transform: uppercase; }
