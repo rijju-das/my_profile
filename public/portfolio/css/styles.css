@@ -199,12 +199,12 @@ button { color: inherit; font: inherit; }
 .recognition-grid { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--ink); background: var(--ink); gap: 1px; }
 .recognition-card { min-width: 0; background: var(--white); }
 .recognition-card span { font: 500 .6rem var(--mono); color: var(--coral); text-transform: uppercase; }
-.recognition-media { position: relative; height: 112px; overflow: hidden; border-bottom: 1px solid var(--line); background: var(--paper); }
-.recognition-media img { width: 100%; height: 100%; object-fit: cover; object-position: center 42%; filter: saturate(.82) contrast(.96); transition: filter .25s ease, transform .35s ease; }
-.recognition-card:nth-child(2) .recognition-media img { object-position: center 35%; }
+.recognition-media { position: relative; height: 126px; overflow: hidden; border-bottom: 1px solid var(--line); background: var(--paper); }
+.recognition-media img { width: 100%; height: 100%; object-fit: cover; object-position: center 48%; filter: saturate(.82) contrast(.96); transition: filter .25s ease, transform .35s ease; }
+.recognition-card:nth-child(2) .recognition-media img { object-position: center 40%; }
 .recognition-card:hover .recognition-media img { filter: saturate(1) contrast(1); transform: scale(1.018); }
 .recognition-media span { position: absolute; top: .8rem; left: .8rem; padding: .38rem .48rem; color: var(--ink); background: rgba(244,241,232,.9); border: 1px solid rgba(21,36,30,.28); backdrop-filter: blur(5px); }
-.recognition-copy { min-height: 190px; padding: 1.35rem 1.5rem 1.45rem; display: flex; flex-direction: column; }
+.recognition-copy { min-height: 215px; padding: 1.35rem 1.5rem 1.45rem; display: flex; flex-direction: column; }
 .recognition-card h3 { margin: 0 0 .6rem; font: 400 2rem/1 var(--serif); }
 .recognition-card p { margin: 0; color: var(--muted); font-size: .78rem; }
 .recognition-card p strong { color: var(--ink); font-weight: 700; }
