@@ -200,8 +200,9 @@ button { color: inherit; font: inherit; }
 .recognition-card { min-width: 0; background: var(--white); }
 .recognition-card span { font: 500 .6rem var(--mono); color: var(--coral); text-transform: uppercase; }
 .recognition-media { position: relative; height: 126px; overflow: hidden; border-bottom: 1px solid var(--line); background: var(--paper); }
-.recognition-media img { width: 100%; height: 100%; object-fit: cover; object-position: center 48%; filter: saturate(.82) contrast(.96); transition: filter .25s ease, transform .35s ease; }
-.recognition-card:nth-child(2) .recognition-media img { object-position: center 40%; }
+.recognition-media img { width: 100%; height: 100%; object-fit: cover; object-position: center 36%; filter: saturate(.82) contrast(.96); transition: filter .25s ease, transform .35s ease; }
+.recognition-card:nth-child(2) .recognition-media img { object-position: center 25%; }
+.recognition-card:nth-child(3) .recognition-media img { object-position: center 38%; }
 .recognition-card:hover .recognition-media img { filter: saturate(1) contrast(1); transform: scale(1.018); }
 .recognition-media span { position: absolute; top: .8rem; left: .8rem; padding: .38rem .48rem; color: var(--ink); background: rgba(244,241,232,.9); border: 1px solid rgba(21,36,30,.28); backdrop-filter: blur(5px); }
 .recognition-copy { min-height: 215px; padding: 1.35rem 1.5rem 1.45rem; display: flex; flex-direction: column; }
