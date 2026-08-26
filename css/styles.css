@@ -196,16 +196,23 @@ button { color: inherit; font: inherit; }
 .funding-card p { margin-top: .7rem; color: rgba(21,36,30,.72); }
 .funding-card p strong, .funding-card p b { color: var(--ink); }
 
-.recognition-grid { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--ink); }
-.recognition-card { min-height: 290px; padding: 1.5rem; display: flex; flex-direction: column; border-right: 1px solid var(--ink); background: var(--white); }
-.recognition-card:last-child { border-right: 0; }
+.recognition-grid { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--ink); background: var(--ink); gap: 1px; }
+.recognition-card { min-width: 0; background: var(--white); }
 .recognition-card span { font: 500 .6rem var(--mono); color: var(--coral); text-transform: uppercase; }
-.recognition-top { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; }
-.recognition-top img { width: 82px; height: 46px; object-fit: cover; border: 1px solid var(--line); filter: saturate(.78); transition: filter .2s ease, transform .2s ease; }
-.recognition-card:hover .recognition-top img { filter: saturate(1); transform: translateY(-2px); }
-.recognition-card h3 { margin: auto 0 .5rem; font: 400 2rem/1 var(--serif); }
+.recognition-media { position: relative; height: 112px; overflow: hidden; border-bottom: 1px solid var(--line); background: var(--paper); }
+.recognition-media img { width: 100%; height: 100%; object-fit: cover; object-position: center 42%; filter: saturate(.82) contrast(.96); transition: filter .25s ease, transform .35s ease; }
+.recognition-card:nth-child(2) .recognition-media img { object-position: center 35%; }
+.recognition-card:hover .recognition-media img { filter: saturate(1) contrast(1); transform: scale(1.018); }
+.recognition-media span { position: absolute; top: .8rem; left: .8rem; padding: .38rem .48rem; color: var(--ink); background: rgba(244,241,232,.9); border: 1px solid rgba(21,36,30,.28); backdrop-filter: blur(5px); }
+.recognition-copy { min-height: 190px; padding: 1.35rem 1.5rem 1.45rem; display: flex; flex-direction: column; }
+.recognition-card h3 { margin: 0 0 .6rem; font: 400 2rem/1 var(--serif); }
 .recognition-card p { margin: 0; color: var(--muted); font-size: .78rem; }
-.recognition-link { align-self: flex-start; margin-top: 1rem; border-bottom: 1px solid var(--ink); font: 500 .54rem var(--mono); letter-spacing: .04em; text-transform: uppercase; }
+.recognition-card p strong { color: var(--ink); font-weight: 700; }
+.recognition-link { align-self: flex-start; margin-top: auto; padding-top: 1rem; border-bottom: 1px solid var(--ink); font: 500 .54rem var(--mono); letter-spacing: .04em; text-transform: uppercase; }
+.recognition-link b { display: inline-block; transition: transform .2s ease; }
+.recognition-link:hover b { transform: translate(2px,-2px); }
+.recognition-card--service { grid-column: 1 / -1; min-height: 0; padding: 1.1rem 1.5rem; display: grid; grid-template-columns: 100px minmax(180px,.45fr) 1fr; gap: 1.5rem; align-items: center; }
+.recognition-card--service h3 { margin: 0; font-size: 1.55rem; }
 
 .skills { border-top: 1px solid var(--line); }
 .skill-groups { border-top: 1px solid var(--ink); }
@@ -234,7 +241,7 @@ button { color: inherit; font: inherit; }
   .journey-layout { grid-template-columns: 1fr; }
   .journey-aside { position: static; grid-template-columns: repeat(2, 1fr); }
   .recognition-grid { grid-template-columns: repeat(2, 1fr); }
-  .recognition-card:nth-child(2) { border-right: 0; }.recognition-card:nth-child(-n+2) { border-bottom: 1px solid; }
+  .recognition-card--visual:nth-child(3) { grid-column: 1 / -1; }
 }
 
 @media (max-width: 760px) {
@@ -264,7 +271,7 @@ button { color: inherit; font: inherit; }
 
 @media (max-width: 500px) {
   .hero-visual { min-height: 380px; }.signal-orbit { inset: 2% 0; }
-  .recognition-grid { grid-template-columns: 1fr; }.recognition-card, .recognition-card:nth-child(2) { border-right: 0; border-bottom: 1px solid; }.recognition-card:last-child { border-bottom: 0; }
+  .recognition-grid { grid-template-columns: 1fr; }.recognition-card--visual:nth-child(3), .recognition-card--service { grid-column: auto; }.recognition-card--service { grid-template-columns: 1fr; gap: .45rem; padding: 1.35rem 1.5rem; }.recognition-media { height: 126px; }
   .project-meta { flex-direction: column; gap: .25rem; }
   .publication-row { grid-template-columns: 1fr 32px; }.pub-year { grid-column: 1 / -1; }
 }
