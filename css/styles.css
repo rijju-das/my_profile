@@ -200,8 +200,12 @@ button { color: inherit; font: inherit; }
 .recognition-card { min-height: 290px; padding: 1.5rem; display: flex; flex-direction: column; border-right: 1px solid var(--ink); background: var(--white); }
 .recognition-card:last-child { border-right: 0; }
 .recognition-card span { font: 500 .6rem var(--mono); color: var(--coral); text-transform: uppercase; }
+.recognition-top { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; }
+.recognition-top img { width: 82px; height: 46px; object-fit: cover; border: 1px solid var(--line); filter: saturate(.78); transition: filter .2s ease, transform .2s ease; }
+.recognition-card:hover .recognition-top img { filter: saturate(1); transform: translateY(-2px); }
 .recognition-card h3 { margin: auto 0 .5rem; font: 400 2rem/1 var(--serif); }
 .recognition-card p { margin: 0; color: var(--muted); font-size: .78rem; }
+.recognition-link { align-self: flex-start; margin-top: 1rem; border-bottom: 1px solid var(--ink); font: 500 .54rem var(--mono); letter-spacing: .04em; text-transform: uppercase; }
 
 .skills { border-top: 1px solid var(--line); }
 .skill-groups { border-top: 1px solid var(--ink); }
