@@ -95,11 +95,6 @@ button { color: inherit; font: inherit; }
 .signal-orbit { position: absolute; inset: 2% -1%; border: 1px solid var(--line); border-radius: 50%; animation: orbit 28s linear infinite; }
 @keyframes orbit { to { transform: rotate(1turn); } }
 
-.statement-band { overflow: hidden; border-block: 1px solid var(--ink); background: #c9f17a; }
-.marquee { display: flex; width: max-content; animation: marquee 25s linear infinite; }
-.marquee span { padding: .7rem 2rem; font: 500 1rem var(--mono); letter-spacing: .1em; text-transform: uppercase; }
-@keyframes marquee { to { transform: translateX(-33.333%); } }
-
 .research, .work, .publications, .journey, .recognition, .skills { padding-block: clamp(6rem, 10vw, 10rem); }
 .section-heading { max-width: 860px; margin-bottom: clamp(3rem, 6vw, 5rem); }
 .section-heading h2 { margin: 0; font: 400 clamp(2.7rem, 5vw, 5.2rem)/.95 var(--serif); letter-spacing: -.045em; }

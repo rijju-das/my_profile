@@ -14,14 +14,14 @@ export async function generateMetadata(): Promise<Metadata> {
     description: "Researching how visual AI can recognise, describe and explain affective information.",
     openGraph: {
       title: "Riju Das — Affective Computing & Computer Vision",
-      description: "Signals → meaning → evidence: an interactive research portfolio.",
+      description: "An interactive portfolio in affective computing and computer vision.",
       type: "website",
       images: [{ url: new URL("/og.png", base).toString(), width: 1600, height: 900, alt: "Riju Das research portfolio" }],
     },
     twitter: {
       card: "summary_large_image",
       title: "Riju Das — Affective Computing & Computer Vision",
-      description: "Signals → meaning → evidence: an interactive research portfolio.",
+      description: "An interactive portfolio in affective computing and computer vision.",
       images: [new URL("/og.png", base).toString()],
     },
   };
