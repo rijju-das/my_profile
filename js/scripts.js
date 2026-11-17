@@ -82,4 +82,29 @@ document.addEventListener('DOMContentLoaded', () => {
   }));
 
   document.querySelector('#year').textContent = new Date().getFullYear();
+
+  // Depth: cards and the portrait tilt towards the pointer, and a soft light follows it.
+  // Only with a mouse or trackpad, and not when the visitor prefers reduced motion.
+  const canTilt = window.matchMedia('(hover: hover) and (pointer: fine)').matches
+    && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (canTilt) {
+    const maxTilt = { '.portrait-wrap': 10, '.atlas-figure': 5, '.project-card': 4, '.recognition-card--visual': 5, '.aside-card': 4 };
+    Object.entries(maxTilt).forEach(([selector, degrees]) => {
+      document.querySelectorAll(selector).forEach(card => {
+        card.addEventListener('pointerenter', () => card.classList.add('tilting'));
+        card.addEventListener('pointermove', event => {
+          const box = card.getBoundingClientRect();
+          const x = (event.clientX - box.left) / box.width;
+          const y = (event.clientY - box.top) / box.height;
+          card.style.setProperty('--mx', `${(x * 100).toFixed(1)}%`);
+          card.style.setProperty('--my', `${(y * 100).toFixed(1)}%`);
+          card.style.transform = `perspective(1000px) rotateX(${((0.5 - y) * degrees).toFixed(2)}deg) rotateY(${((x - 0.5) * degrees).toFixed(2)}deg) translateY(-4px)`;
+        });
+        card.addEventListener('pointerleave', () => {
+          card.style.transform = '';
+          window.setTimeout(() => card.classList.remove('tilting'), 300);
+        });
+      });
+    });
+  }
 });
