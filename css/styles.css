@@ -397,13 +397,26 @@ body::before {
   .reveal { transform: none; }
 }
 
-/* walking character strip at the bottom of the hero (js/character.js) */
-.character-stage { grid-column: 1 / -1; position: relative; height: clamp(180px, 20vw, 250px); margin-top: calc(-1 * clamp(1rem, 3vw, 3rem)); opacity: 0; transition: opacity .6s ease; }
-.character-stage.is-ready { opacity: 1; }
-.character-stage::after { content: ""; position: absolute; right: 0; bottom: 6%; left: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--line) 12%, var(--line) 88%, transparent); pointer-events: none; }
-.character-stage canvas { display: block; width: 100%; height: 100%; }
+/* 3D character at the centre of the emotion space (js/character.js) */
+.character-stage { position: relative; z-index: 2; place-self: stretch; min-height: inherit; display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: .75rem; opacity: 0; transition: opacity .6s ease; }
+.character-stage.is-ready, .character-stage.is-failed { opacity: 1; }
+.character-view { position: relative; min-height: 0; }
+.character-view canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 .character-stage.is-hover canvas { cursor: pointer; }
-.character-bubble { position: absolute; z-index: 1; margin: 0; padding: .5rem .85rem; transform: translate(-50%, calc(-100% - 10px)); border: 1px solid var(--edge); border-radius: 1rem; background: var(--white); box-shadow: var(--shadow); font: 600 .8rem var(--sans); color: var(--ink); white-space: nowrap; pointer-events: none; animation: bubble-in .25s ease; }
-.character-bubble::after { content: ""; position: absolute; left: 50%; bottom: -7px; width: 12px; height: 12px; transform: translateX(-50%) rotate(45deg); border-right: 1px solid var(--edge); border-bottom: 1px solid var(--edge); background: var(--white); }
-@keyframes bubble-in { from { opacity: 0; transform: translate(-50%, calc(-100% - 2px)); } }
-@media (max-width: 760px) { .character-stage { height: 170px; margin-top: 0; } }
+/* if the 3D model cannot be shown, a still picture of her stands in */
+.character-stage.is-failed .character-view { background: url("../assets/character/character_still.png") center bottom / contain no-repeat; }
+.character-stage.is-failed canvas, .character-stage.is-failed .character-moods { display: none; }
+.character-bubble { position: absolute; z-index: 1; display: flex; align-items: center; gap: .6rem; width: max-content; max-width: min(17rem, 92%); margin: 0; padding: .45rem .9rem .45rem .45rem; transform: translate(-50%, calc(-100% - 12px)); border: 1px solid var(--edge); border-radius: 2rem; background: var(--white); box-shadow: var(--shadow); font: 600 .8rem/1.3 var(--sans); color: var(--ink); pointer-events: none; animation: bubble-in .25s ease; }
+.character-bubble[hidden] { display: none; }
+.character-bubble img { flex: none; width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--paper-deep); }
+.character-bubble::after { content: ""; position: absolute; left: var(--tail, 50%); bottom: -7px; width: 12px; height: 12px; transform: translateX(-50%) rotate(45deg); border-right: 1px solid var(--edge); border-bottom: 1px solid var(--edge); background: var(--white); }
+@keyframes bubble-in { from { opacity: 0; transform: translate(-50%, calc(-100% - 4px)); } }
+.character-moods { display: flex; justify-content: center; gap: .5rem; flex-wrap: wrap; }
+.character-moods button { padding: .45rem 1rem; border: 1px solid var(--edge); border-radius: 3rem; background: rgb(var(--surface) / .75); color: var(--ink); font: 700 .74rem var(--sans); cursor: pointer; transition: background .2s ease, color .2s ease, transform .2s ease; }
+.character-moods button:hover { transform: translateY(-1px); border-color: var(--ink); }
+.character-moods button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+
+/* her photo sits beside the contact links at the end of the page */
+.contact-side { display: grid; gap: 2.5rem; align-content: end; justify-items: start; }
+.contact-side .portrait-wrap { width: min(250px, 62%); }
+.contact-side .contact-links { justify-self: stretch; }

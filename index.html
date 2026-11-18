@@ -64,16 +64,19 @@
           </dl>
         </div>
 
-        <div class="hero-visual reveal" aria-label="Portrait of Riju Das and research themes">
-          <div class="portrait-wrap">
-            <img src="assets/img/profile.jpg" alt="Riju Das" width="1533" height="1533">
+        <div class="hero-visual reveal">
+          <div class="character-stage" data-model="assets/character/riju_character.glb" data-assets="assets/character/">
+            <div class="character-view">
+              <canvas aria-hidden="true"></canvas>
+              <div class="character-bubble" aria-live="polite" hidden><img alt="" width="48" height="48"><span></span></div>
+            </div>
+            <div class="character-moods" role="group" aria-label="Change the character's mood">
+              <button type="button" data-mood="happy" aria-pressed="true">Happy</button>
+              <button type="button" data-mood="angry" aria-pressed="false">Angry</button>
+              <button type="button" data-mood="disgusted" aria-pressed="false">Disgusted</button>
+            </div>
           </div>
           <div class="signal-orbit" aria-hidden="true"></div>
-        </div>
-
-        <div class="character-stage" aria-hidden="true" data-model="assets/character/riju_character.glb">
-          <canvas></canvas>
-          <p class="character-bubble" hidden></p>
         </div>
       </section>
 
@@ -388,10 +391,15 @@
           <p>I’m open to research and R&amp;D conversations in affective computing, computer vision and multimodal AI.</p>
           <a class="contact-email" href="mailto:riju.das@ucdconnect.ie">riju.das@ucdconnect.ie <span aria-hidden="true">↗</span></a>
         </div>
-        <div class="contact-links reveal">
-          <a href="https://github.com/rijju-das" target="_blank" rel="noopener"><span>GitHub</span><b>↗</b></a>
-          <a href="https://www.linkedin.com/in/riju-das-058b3295/" target="_blank" rel="noopener"><span>LinkedIn</span><b>↗</b></a>
-          <a href="https://scholar.google.com/citations?user=RPJi3FAAAAAJ&amp;hl=en" target="_blank" rel="noopener"><span>Google Scholar</span><b>↗</b></a>
+        <div class="contact-side reveal">
+          <div class="portrait-wrap">
+            <img src="assets/img/profile.jpg" alt="Riju Das" width="1533" height="1533" loading="lazy">
+          </div>
+          <div class="contact-links">
+            <a href="https://github.com/rijju-das" target="_blank" rel="noopener"><span>GitHub</span><b>↗</b></a>
+            <a href="https://www.linkedin.com/in/riju-das-058b3295/" target="_blank" rel="noopener"><span>LinkedIn</span><b>↗</b></a>
+            <a href="https://scholar.google.com/citations?user=RPJi3FAAAAAJ&amp;hl=en" target="_blank" rel="noopener"><span>Google Scholar</span><b>↗</b></a>
+          </div>
         </div>
       </section>
     </main>

@@ -1,21 +1,49 @@
-/* Walking character: a small 3D version of Riju strolls along the bottom of the hero.
-   She walks to a spot, turns to face the visitor, idles, then walks somewhere else.
-   Clicking her makes her stop, face you, hop and say hi.
+/* 3D character: a small 3D version of Riju stands in the hero, where the portrait used to be.
+   She walks a few steps, turns to face the visitor, idles, then walks somewhere else.
+   Clicking her makes her stop, face you and say something.
+   The three buttons under her change her mood: her face, how briskly she walks and what she says.
    Uses three.js (loaded through the import map in index.html). The model is a glTF file
    with two animations: "Walk" (a 1.1 s in-place loop) and "Idle". */
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
+/* Each mood: tempo scales the walk, rest is how long she stands between walks (seconds),
+   enter is what she says when the mood is chosen, lines are what she says when clicked.
+   Every mood other than happy needs two pictures in the assets folder:
+   face_<mood>.png (her face, painted over the model's texture) and portrait_<mood>.jpg (speech bubble). */
+const MOODS = {
+  happy: {
+    tempo: 1, rest: [2, 5],
+    enter: 'Happy to see you! 😊',
+    lines: ['Hi there! 👋', 'Hello! Thanks for visiting 😊', 'Hi! Want to see my research?'],
+  },
+  angry: {
+    tempo: 1.3, rest: [0.8, 2],
+    enter: 'Grr… the model overfitted again. 😠',
+    lines: ['Hmph. 😠', 'Not now. I am debugging.', 'Who mislabelled my data?'],
+  },
+  disgusted: {
+    tempo: 0.8, rest: [2.5, 5],
+    enter: 'Eww, who left this bug here? 🤢',
+    lines: ['Eww. 🤢', 'Yuck. Blurry test images.', 'Is that a 0.049 p-value?'],
+  },
+};
+
 const stage = document.querySelector('.character-stage');
 if (stage) start(stage);
 
 function start(stage) {
-  const canvas = stage.querySelector('canvas');
-  const bubble = stage.querySelector('.character-bubble');
+  const view = stage.querySelector('.character-view') || stage;
+  const canvas = view.querySelector('canvas');
+  const bubble = view.querySelector('.character-bubble');
+  const bubbleImage = bubble && bubble.querySelector('img');
+  const bubbleText = bubble && bubble.querySelector('span');
+  const moodButtons = [...stage.querySelectorAll('.character-moods button[data-mood]')];
   const modelUrl = stage.dataset.model || 'assets/character/riju_character.glb';
+  const assets = stage.dataset.assets || 'assets/character/';
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const fail = () => { stage.hidden = true; };
+  const fail = () => { stage.classList.add('is-failed'); };
 
   let renderer;
   try {
@@ -28,11 +56,11 @@ function start(stage) {
   // ---- scene, camera and light ------------------------------------------------------
   const scene = new THREE.Scene();
   const FOV = 22;
-  const VIEW_HEIGHT = 1.32;          // world units visible top to bottom (she is 1.0 tall)
+  const VIEW_HEIGHT = 1.42;          // world units visible top to bottom (she is 1.0 tall)
   const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 50);
   const distance = VIEW_HEIGHT / (2 * Math.tan(THREE.MathUtils.degToRad(FOV / 2)));
-  camera.position.set(0, 0.18, distance);
-  camera.lookAt(0, 0.02, 0);
+  camera.position.set(0, 0.2, distance);
+  camera.lookAt(0, 0.07, 0);         // a little above her middle, which leaves room for the speech bubble
 
   // mostly soft, even light so her colours read the way they were painted; the two
   // directional lights only add a little shape
@@ -67,9 +95,10 @@ function start(stage) {
 
   // ---- sizing ---------------------------------------------------------------------------
   let halfWidth = 1;                 // half of the visible floor width, in world units
-  const MARGIN = 0.32;               // keep her this far from the edges
+  const MARGIN = 0.27;               // keep her this far from the edges (about half her width)
+  const MIN_ROOM = 0.25;             // she only walks if she has at least this much room each side
   function resize() {
-    const w = stage.clientWidth, h = stage.clientHeight;
+    const w = view.clientWidth, h = view.clientHeight;
     if (!w || !h) return;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
@@ -77,14 +106,15 @@ function start(stage) {
     halfWidth = (VIEW_HEIGHT * camera.aspect) / 2;
   }
   resize();
-  new ResizeObserver(resize).observe(stage);
+  new ResizeObserver(resize).observe(view);
 
   // ---- character state ----------------------------------------------------------------
   const SPEED = 0.41;                // world units per second; matches the stride of the walk
   const TURN_SPEED = 6;              // how quickly she turns (higher is faster)
   const FACE_VIEWER = 0;             // rotation that faces the camera
   let model, mixer, walk, idle, current;
-  let mode = 'idle', timer = 1.5, targetX = 0, heading = FACE_VIEWER, hop = 0;
+  let mode = 'idle', timer = 1.5, targetX = 0, heading = FACE_VIEWER, hop = 0, shake = 0;
+  let mood = 'happy';
 
   const loader = new GLTFLoader();
   const draco = new DRACOLoader();
@@ -98,17 +128,18 @@ function start(stage) {
     current = action;
   }
 
+  const between = ([low, high]) => low + Math.random() * (high - low);
   function wrapAngle(a) { return Math.atan2(Math.sin(a), Math.cos(a)); }
   function turnToward(goal, dt) {
     const diff = wrapAngle(goal - heading);
     heading += diff * Math.min(1, TURN_SPEED * dt);
-    model.rotation.y = heading;
     return Math.abs(diff) < 0.05;
   }
   function pickTarget() {
     const limit = Math.max(0, halfWidth - MARGIN);
+    const far = Math.min(0.6, limit * 0.8);         // prefer a spot at least this far away
     let x = model.position.x;
-    for (let i = 0; i < 8 && Math.abs(x - model.position.x) < 0.6; i += 1) x = (Math.random() * 2 - 1) * limit;
+    for (let i = 0; i < 8 && Math.abs(x - model.position.x) < far; i += 1) x = (Math.random() * 2 - 1) * limit;
     return x;
   }
 
@@ -121,7 +152,7 @@ function start(stage) {
     if (mode === 'idle') {
       turnToward(FACE_VIEWER, dt);
       timer -= dt;
-      if (timer <= 0 && !reduceMotion && limit > 0.4) {
+      if (timer <= 0 && !reduceMotion && limit > MIN_ROOM) {
         targetX = pickTarget();
         mode = 'turn';
       }
@@ -130,11 +161,11 @@ function start(stage) {
       if (turnToward(goal, dt)) { mode = 'walk'; play(walk); }
     } else if (mode === 'walk') {
       const dir = Math.sign(targetX - x);
-      const step = SPEED * dt;
+      const step = SPEED * MOODS[mood].tempo * dt;
       if (Math.abs(targetX - x) <= step) {
         model.position.x = targetX;
         mode = 'idle';
-        timer = 2 + Math.random() * 3;
+        timer = between(MOODS[mood].rest);
         play(idle);
       } else {
         model.position.x += dir * step;
@@ -142,41 +173,114 @@ function start(stage) {
     } else if (mode === 'react') {
       turnToward(FACE_VIEWER, dt);
       timer -= dt;
-      if (timer <= 0) { mode = 'idle'; timer = 1.5 + Math.random() * 2; }
+      if (timer <= 0) { mode = 'idle'; timer = between(MOODS[mood].rest) * 0.6; }
     }
 
-    // happy hop: two small bounces after a click
+    // happy hop: two small bounces
     if (hop > 0) {
       hop = Math.max(0, hop - dt);
       const t = 1 - hop / 0.9;                      // 0 -> 1 over the hop
-      const bounce = Math.abs(Math.sin(t * Math.PI * 2)) * (1 - t) * 0.07;
-      model.position.y = bounce;
+      model.position.y = Math.abs(Math.sin(t * Math.PI * 2)) * (1 - t) * 0.07;
     } else {
       model.position.y = 0;
     }
+    // cross shake: a quick side-to-side wiggle that dies away
+    let wiggle = 0;
+    if (shake > 0) {
+      shake = Math.max(0, shake - dt);
+      wiggle = Math.sin((0.7 - shake) * 34) * 0.16 * (shake / 0.7);
+    }
+    model.rotation.y = heading + wiggle;
+
     shadow.position.x = model.position.x;
     const s = 1 - model.position.y * 3;
     shadow.scale.set(s, s, 1);
     placeBubble();
   }
 
-  // ---- speech bubble -------------------------------------------------------------------
-  const greetings = ['Hi there! 👋', 'Hello! Thanks for visiting 😊', 'Hi! Want to see my research?'];
-  let greeting = 0, bubbleTimer = 0;
+  // ---- speech bubble: a small picture of her face and a line of text ---------------------
+  let bubbleTimer = 0;
+  const lineIndex = {};
   const head = new THREE.Vector3();
   function placeBubble() {
-    if (!bubble || bubble.hidden) return;
-    head.set(model.position.x, 0.62, 0).project(camera);
-    bubble.style.left = `${(head.x * 0.5 + 0.5) * 100}%`;
-    bubble.style.top = `${(-head.y * 0.5 + 0.5) * 100}%`;
+    if (!bubble || bubble.hidden || !model) return;
+    head.set(model.position.x, 0.52, 0).project(camera);
+    const w = view.clientWidth, h = view.clientHeight;
+    const headX = (head.x * 0.5 + 0.5) * w;
+    const half = bubble.offsetWidth / 2;
+    const left = Math.min(Math.max(headX, half + 4), Math.max(half + 4, w - half - 4));   // keep it inside the view
+    bubble.style.left = `${left}px`;
+    bubble.style.top = `${(-head.y * 0.5 + 0.5) * h}px`;
+    bubble.style.setProperty('--tail', `${Math.min(Math.max(half + headX - left, 18), bubble.offsetWidth - 18)}px`);
   }
   function say(text) {
     if (!bubble) return;
-    bubble.textContent = text;
+    if (bubbleImage) bubbleImage.src = `${assets}portrait_${mood}.jpg`;
+    if (bubbleText) bubbleText.textContent = text; else bubble.textContent = text;
     bubble.hidden = false;
-    bubbleTimer = 2.8;
+    bubbleTimer = 3.2;
     placeBubble();
   }
+  function react(text) {
+    mode = 'react';
+    timer = 2.8;
+    play(idle, 0.15);
+    if (!reduceMotion) {
+      if (mood === 'happy') hop = 0.9;
+      if (mood === 'angry') shake = 0.7;
+    }
+    say(text);
+  }
+
+  // ---- moods ---------------------------------------------------------------------------
+  // The model carries the happy face. Another mood's face is a small picture that is painted
+  // over a copy of the model's texture the first time that mood is chosen.
+  let bodyMaterial, happyMap, moodRequest = 0;
+  const moodMaps = {};
+  function loadImage(url) {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = reject;
+      image.src = url;
+    });
+  }
+  function faceMap(name) {
+    if (name === 'happy') return Promise.resolve(happyMap);
+    if (!moodMaps[name]) {
+      moodMaps[name] = loadImage(`${assets}face_${name}.png`).then(face => {
+        const source = happyMap.image;
+        const c = document.createElement('canvas');
+        c.width = source.width;
+        c.height = source.height;
+        const g = c.getContext('2d');
+        g.drawImage(source, 0, 0);
+        g.drawImage(face, 0, 0, c.width, c.height);
+        const map = new THREE.CanvasTexture(c);
+        map.flipY = happyMap.flipY;
+        map.colorSpace = happyMap.colorSpace;
+        map.anisotropy = happyMap.anisotropy;
+        map.wrapS = happyMap.wrapS;
+        map.wrapT = happyMap.wrapT;
+        return map;
+      });
+      moodMaps[name].catch(() => { delete moodMaps[name]; });   // allow another try later
+    }
+    return moodMaps[name];
+  }
+  function setMood(name) {
+    if (!MOODS[name] || !model) return;
+    mood = name;
+    moodButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.mood === name)));
+    walk.timeScale = MOODS[name].tempo;
+    react(MOODS[name].enter);
+    const request = ++moodRequest;
+    faceMap(name).then(map => {
+      if (request !== moodRequest || !bodyMaterial) return;     // a newer choice was made meanwhile
+      bodyMaterial.map = map;
+    }).catch(() => {});                                        // keep the face she has if the picture fails
+  }
+  moodButtons.forEach(button => button.addEventListener('click', () => setMood(button.dataset.mood)));
 
   // ---- clicking her --------------------------------------------------------------------
   const corner = new THREE.Vector3();
@@ -194,12 +298,10 @@ function start(stage) {
   canvas.addEventListener('pointerleave', () => stage.classList.remove('is-hover'));
   canvas.addEventListener('click', event => {
     if (!hitTest(event)) return;
-    mode = 'react';
-    timer = 2.6;
-    play(idle, 0.15);
-    if (!reduceMotion) hop = 0.9;
-    say(greetings[greeting]);
-    greeting = (greeting + 1) % greetings.length;
+    const lines = MOODS[mood].lines;
+    const i = lineIndex[mood] || 0;
+    lineIndex[mood] = (i + 1) % lines.length;
+    react(lines[i]);
   });
 
   // ---- loop: only runs while the stage is on screen and the tab is visible -------------
@@ -227,21 +329,26 @@ function start(stage) {
     if (requested) return;
     requested = true;
     const onLoad = gltf => {
+      const clip = name => gltf.animations.find(a => a.name.toLowerCase() === name);
+      const walkClip = clip('walk'), idleClip = clip('idle');
+      if (!walkClip || !idleClip) { fail(); return; }
       model = gltf.scene;
       const anisotropy = renderer.capabilities.getMaxAnisotropy();
       model.traverse(o => {
         if (!o.isMesh) return;
         o.frustumCulled = false;
         if (o.material.map) o.material.map.anisotropy = anisotropy;
+        // her face is painted on the body mesh (the other mesh is her hair)
+        if (o.material.map && (!bodyMaterial || /web|body/i.test(o.name) || /web|body/i.test(o.material.name))) {
+          bodyMaterial = o.material;
+          happyMap = o.material.map;
+        }
       });
       scene.add(model);
       mixer = new THREE.AnimationMixer(model);
-      const clip = name => gltf.animations.find(a => a.name.toLowerCase() === name);
-      const walkClip = clip('walk'), idleClip = clip('idle');
-      if (!walkClip || !idleClip) { fail(); return; }
       walk = mixer.clipAction(walkClip);
       idle = mixer.clipAction(idleClip);
-      model.position.x = reduceMotion ? 0 : -Math.max(0, halfWidth - MARGIN) * 0.6;
+      model.position.x = 0;
       play(idle, 0);
       stage.classList.add('is-ready');
       wake();
