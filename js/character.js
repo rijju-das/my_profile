@@ -4,7 +4,8 @@
    Clicking her makes her stop, face you and say something.
    The three buttons under her change her mood: her face, how briskly she walks and what she says.
    Uses three.js (loaded through the import map in index.html). The model is a glTF file
-   with two animations: "Walk" (a 1.1 s in-place loop) and "Idle". It also carries gestures for
+   with the animations "Walk" (a 1.1 s in-place loop), "Idle" (relaxed stance) and "Idle_folded"
+   (arms folded; she sometimes rests like this, most often when angry). It also carries gestures for
    each mood, named "Gesture_<mood>" and optionally "Gesture_<mood>_2" (happy: a wave and a blown
    kiss, angry: a stomp, disgusted: a dismissive hand). She plays one on a click, on a mood change
    and now and then while resting; with no gesture in the model she hops or shakes her head instead. */
@@ -14,22 +15,23 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
 /* Each mood: tempo scales the walk, rest is how long she stands between walks (seconds),
    enter is what she says when the mood is chosen, lines are what she says when clicked,
-   face is how far she turns away from the viewer while gesturing (radians), so the move shows.
+   face is how far she turns away from the viewer while gesturing (radians), so the move shows,
+   folded is how often (0 to 1) she rests with her arms folded instead of hanging.
    Every mood other than happy needs two pictures in the assets folder:
    face_<mood>.png (her face, painted over the model's texture) and portrait_<mood>.jpg (speech bubble). */
 const MOODS = {
   happy: {
-    tempo: 1, rest: [2, 5], face: 0,
+    tempo: 1, rest: [2, 5], face: 0, folded: 0.35,
     enter: 'Happy to see you! 😊',
     lines: ['Hi there! 👋', 'Hello! Thanks for visiting 😊', 'Hi! Want to see my research?'],
   },
   angry: {
-    tempo: 1.3, rest: [0.8, 2], face: 0.5,
+    tempo: 1.3, rest: [0.8, 2], face: 0.5, folded: 0.8,
     enter: 'Grr… the model overfitted again. 😠',
     lines: ['Hmph. 😠', 'Not now. I am debugging.', 'Who mislabelled my data?'],
   },
   disgusted: {
-    tempo: 0.8, rest: [2.5, 5], face: 0.4,
+    tempo: 0.8, rest: [2.5, 5], face: 0.4, folded: 0.5,
     enter: 'Eww, who left this bug here? 🤢',
     lines: ['Eww. 🤢', 'Yuck. Blurry test images.', 'Is that a 0.049 p-value?'],
   },
@@ -118,7 +120,7 @@ function start(stage) {
   const TURN_SPEED = 6;              // how quickly she turns (higher is faster)
   const FACE_VIEWER = 0;             // rotation that faces the camera
   const REACH = 0.1;                 // the pointer has to be this far from her before she walks to it
-  let model, mixer, walk, idle, current;
+  let model, mixer, walk, idle, idleFolded, current;
   let mode = 'idle', timer = 1.5, targetX = 0, heading = FACE_VIEWER, hop = 0, shake = 0;
   let mood = 'happy';
   const gestures = {};               // mood name -> its gesture animations, when the model has any
@@ -138,6 +140,8 @@ function start(stage) {
   }
 
   const between = ([low, high]) => low + Math.random() * (high - low);
+  // which standing posture she takes for this rest
+  const restPose = () => (idleFolded && Math.random() < (MOODS[mood].folded || 0) ? idleFolded : idle);
   function wrapAngle(a) { return Math.atan2(Math.sin(a), Math.cos(a)); }
   function turnToward(goal, dt) {
     const diff = wrapAngle(goal - heading);
@@ -182,7 +186,7 @@ function start(stage) {
         mode = 'idle';
         timer = between(MOODS[mood].rest);
         if (follow.once) { follow.active = false; follow.once = false; }
-        play(idle);
+        play(restPose(), 0.35);
       } else {
         // she can change direction mid-walk; she only steps forward once she mostly faces that way
         const facing = Math.abs(wrapAngle((dir > 0 ? Math.PI / 2 : -Math.PI / 2) - heading)) < 0.9;
@@ -192,7 +196,7 @@ function start(stage) {
     } else if (mode === 'react') {
       turnToward(gestureFace, dt);
       timer -= dt;
-      if (timer <= 0) { mode = 'idle'; timer = between(MOODS[mood].rest) * 0.6; play(idle, 0.3); }
+      if (timer <= 0) { mode = 'idle'; timer = between(MOODS[mood].rest) * 0.6; play(restPose(), 0.35); }
     }
 
     // happy hop: two small bounces
@@ -406,6 +410,7 @@ function start(stage) {
       mixer = new THREE.AnimationMixer(model);
       walk = mixer.clipAction(walkClip);
       idle = mixer.clipAction(idleClip);
+      if (clip('idle_folded')) idleFolded = mixer.clipAction(clip('idle_folded'));
       for (const name of Object.keys(MOODS)) {
         const list = [clip(`gesture_${name}`), clip(`gesture_${name}_2`)].filter(Boolean).map(gestureClip => {
           const action = mixer.clipAction(gestureClip);
