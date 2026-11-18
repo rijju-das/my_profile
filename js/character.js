@@ -1,9 +1,12 @@
 /* 3D character: a small 3D version of Riju stands in the hero, where the portrait used to be.
    She walks a few steps, turns to face the visitor, idles, then walks somewhere else.
+   Moving the pointer over her area makes her walk towards it: left of her, she goes left; right, she goes right.
    Clicking her makes her stop, face you and say something.
    The three buttons under her change her mood: her face, how briskly she walks and what she says.
    Uses three.js (loaded through the import map in index.html). The model is a glTF file
-   with two animations: "Walk" (a 1.1 s in-place loop) and "Idle". */
+   with two animations: "Walk" (a 1.1 s in-place loop) and "Idle". It may also carry one gesture
+   per mood, named "Gesture_happy", "Gesture_angry" and "Gesture_disgusted"; when a gesture is there
+   she plays it on a click, on a mood change and now and then while resting. */
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
@@ -112,9 +115,12 @@ function start(stage) {
   const SPEED = 0.41;                // world units per second; matches the stride of the walk
   const TURN_SPEED = 6;              // how quickly she turns (higher is faster)
   const FACE_VIEWER = 0;             // rotation that faces the camera
+  const REACH = 0.1;                 // the pointer has to be this far from her before she walks to it
   let model, mixer, walk, idle, current;
   let mode = 'idle', timer = 1.5, targetX = 0, heading = FACE_VIEWER, hop = 0, shake = 0;
   let mood = 'happy';
+  const gestures = {};               // mood name -> its gesture animation, when the model has one
+  const follow = { active: false, once: false, x: 0 };   // where the pointer is, in world units
 
   const loader = new GLTFLoader();
   const draco = new DRACOLoader();
@@ -149,12 +155,19 @@ function start(stage) {
     const limit = Math.max(0, halfWidth - MARGIN);
     if (Math.abs(x) > limit && mode !== 'walk') model.position.x = Math.sign(x) * limit;
 
+    // the pointer leads her: it replaces whatever spot she had chosen for herself
+    const led = follow.active && !reduceMotion && mode !== 'react';
+    if (led) {
+      const goal = Math.min(limit, Math.max(-limit, follow.x));
+      if (mode === 'walk' || mode === 'turn') targetX = goal;
+      else if (Math.abs(goal - x) > REACH) { targetX = goal; mode = 'turn'; }
+    }
+
     if (mode === 'idle') {
       turnToward(FACE_VIEWER, dt);
-      timer -= dt;
+      if (!led) timer -= dt;                        // while the pointer is on her area she waits for it
       if (timer <= 0 && !reduceMotion && limit > MIN_ROOM) {
-        targetX = pickTarget();
-        mode = 'turn';
+        if (!restGesture()) { targetX = pickTarget(); mode = 'turn'; }
       }
     } else if (mode === 'turn') {
       const goal = targetX > x ? Math.PI / 2 : -Math.PI / 2;
@@ -162,18 +175,21 @@ function start(stage) {
     } else if (mode === 'walk') {
       const dir = Math.sign(targetX - x);
       const step = SPEED * MOODS[mood].tempo * dt;
-      if (Math.abs(targetX - x) <= step) {
-        model.position.x = targetX;
+      if (Math.abs(targetX - x) <= Math.max(step, 0.01)) {
         mode = 'idle';
         timer = between(MOODS[mood].rest);
+        if (follow.once) { follow.active = false; follow.once = false; }
         play(idle);
       } else {
-        model.position.x += dir * step;
+        // she can change direction mid-walk; she only steps forward once she mostly faces that way
+        const facing = Math.abs(wrapAngle((dir > 0 ? Math.PI / 2 : -Math.PI / 2) - heading)) < 0.9;
+        turnToward(dir > 0 ? Math.PI / 2 : -Math.PI / 2, dt);
+        if (facing) model.position.x += dir * step;
       }
     } else if (mode === 'react') {
       turnToward(FACE_VIEWER, dt);
       timer -= dt;
-      if (timer <= 0) { mode = 'idle'; timer = between(MOODS[mood].rest) * 0.6; }
+      if (timer <= 0) { mode = 'idle'; timer = between(MOODS[mood].rest) * 0.6; play(idle, 0.3); }
     }
 
     // happy hop: two small bounces
@@ -224,12 +240,26 @@ function start(stage) {
   function react(text) {
     mode = 'react';
     timer = 2.8;
-    play(idle, 0.15);
-    if (!reduceMotion) {
-      if (mood === 'happy') hop = 0.9;
-      if (mood === 'angry') shake = 0.7;
+    const gesture = !reduceMotion && gestures[mood];
+    if (gesture) {
+      if (current === gesture) gesture.reset(); else play(gesture, 0.2);
+      timer = Math.max(timer, gesture.getClip().duration);
+    } else {
+      play(idle, 0.15);
+      if (!reduceMotion) {
+        if (mood === 'happy') hop = 0.9;
+        if (mood === 'angry') shake = 0.7;
+      }
     }
-    say(text);
+    if (text) say(text);
+  }
+  // now and then, instead of walking off after a rest, she does her mood's gesture (no speech bubble)
+  let restsSinceGesture = 0;
+  function restGesture() {
+    if (!gestures[mood] || ++restsSinceGesture < 2) return false;
+    restsSinceGesture = 0;
+    react('');
+    return true;
   }
 
   // ---- moods ---------------------------------------------------------------------------
@@ -294,8 +324,29 @@ function start(stage) {
     corner.set(model.position.x + 0.26, 0.5, 0).project(camera);
     return px >= left && px <= corner.x && py >= bottom && py <= corner.y;
   }
-  canvas.addEventListener('pointermove', event => stage.classList.toggle('is-hover', hitTest(event)));
-  canvas.addEventListener('pointerleave', () => stage.classList.remove('is-hover'));
+  // where the pointer is along the floor, in world units
+  function pointerX(event) {
+    const rect = canvas.getBoundingClientRect();
+    return ((event.clientX - rect.left) / rect.width * 2 - 1) * halfWidth;
+  }
+  canvas.addEventListener('pointermove', event => {
+    stage.classList.toggle('is-hover', hitTest(event));
+    if (event.pointerType === 'touch') return;        // a finger leads her by tapping instead (below)
+    follow.active = true;
+    follow.once = false;
+    follow.x = pointerX(event);
+  });
+  canvas.addEventListener('pointerleave', () => {
+    stage.classList.remove('is-hover');
+    if (!follow.once) follow.active = false;
+  });
+  // on a touch screen, tapping beside her sends her there
+  canvas.addEventListener('pointerdown', event => {
+    if (event.pointerType !== 'touch' || hitTest(event)) return;
+    follow.active = true;
+    follow.once = true;
+    follow.x = pointerX(event);
+  });
   canvas.addEventListener('click', event => {
     if (!hitTest(event)) return;
     const lines = MOODS[mood].lines;
@@ -348,6 +399,13 @@ function start(stage) {
       mixer = new THREE.AnimationMixer(model);
       walk = mixer.clipAction(walkClip);
       idle = mixer.clipAction(idleClip);
+      for (const name of Object.keys(MOODS)) {
+        const gestureClip = clip(`gesture_${name}`);
+        if (!gestureClip) continue;
+        gestures[name] = mixer.clipAction(gestureClip);
+        gestures[name].setLoop(THREE.LoopOnce, 1);
+        gestures[name].clampWhenFinished = true;      // hold the last pose until she blends back to idle
+      }
       model.position.x = 0;
       play(idle, 0);
       stage.classList.add('is-ready');
