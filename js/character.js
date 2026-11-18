@@ -4,30 +4,32 @@
    Clicking her makes her stop, face you and say something.
    The three buttons under her change her mood: her face, how briskly she walks and what she says.
    Uses three.js (loaded through the import map in index.html). The model is a glTF file
-   with two animations: "Walk" (a 1.1 s in-place loop) and "Idle". It may also carry one gesture
-   per mood, named "Gesture_happy", "Gesture_angry" and "Gesture_disgusted"; when a gesture is there
-   she plays it on a click, on a mood change and now and then while resting. */
+   with two animations: "Walk" (a 1.1 s in-place loop) and "Idle". It also carries gestures for
+   each mood, named "Gesture_<mood>" and optionally "Gesture_<mood>_2" (happy: a wave and a blown
+   kiss, angry: a stomp, disgusted: a dismissive hand). She plays one on a click, on a mood change
+   and now and then while resting; with no gesture in the model she hops or shakes her head instead. */
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
 /* Each mood: tempo scales the walk, rest is how long she stands between walks (seconds),
-   enter is what she says when the mood is chosen, lines are what she says when clicked.
+   enter is what she says when the mood is chosen, lines are what she says when clicked,
+   face is how far she turns away from the viewer while gesturing (radians), so the move shows.
    Every mood other than happy needs two pictures in the assets folder:
    face_<mood>.png (her face, painted over the model's texture) and portrait_<mood>.jpg (speech bubble). */
 const MOODS = {
   happy: {
-    tempo: 1, rest: [2, 5],
+    tempo: 1, rest: [2, 5], face: 0,
     enter: 'Happy to see you! 😊',
     lines: ['Hi there! 👋', 'Hello! Thanks for visiting 😊', 'Hi! Want to see my research?'],
   },
   angry: {
-    tempo: 1.3, rest: [0.8, 2],
+    tempo: 1.3, rest: [0.8, 2], face: 0.5,
     enter: 'Grr… the model overfitted again. 😠',
     lines: ['Hmph. 😠', 'Not now. I am debugging.', 'Who mislabelled my data?'],
   },
   disgusted: {
-    tempo: 0.8, rest: [2.5, 5],
+    tempo: 0.8, rest: [2.5, 5], face: 0.4,
     enter: 'Eww, who left this bug here? 🤢',
     lines: ['Eww. 🤢', 'Yuck. Blurry test images.', 'Is that a 0.049 p-value?'],
   },
@@ -119,7 +121,8 @@ function start(stage) {
   let model, mixer, walk, idle, current;
   let mode = 'idle', timer = 1.5, targetX = 0, heading = FACE_VIEWER, hop = 0, shake = 0;
   let mood = 'happy';
-  const gestures = {};               // mood name -> its gesture animation, when the model has one
+  const gestures = {};               // mood name -> its gesture animations, when the model has any
+  let gestureFace = 0;               // which way she faces during the current reaction
   const follow = { active: false, once: false, x: 0 };   // where the pointer is, in world units
 
   const loader = new GLTFLoader();
@@ -187,7 +190,7 @@ function start(stage) {
         if (facing) model.position.x += dir * step;
       }
     } else if (mode === 'react') {
-      turnToward(FACE_VIEWER, dt);
+      turnToward(gestureFace, dt);
       timer -= dt;
       if (timer <= 0) { mode = 'idle'; timer = between(MOODS[mood].rest) * 0.6; play(idle, 0.3); }
     }
@@ -240,10 +243,14 @@ function start(stage) {
   function react(text) {
     mode = 'react';
     timer = 2.8;
-    const gesture = !reduceMotion && gestures[mood];
-    if (gesture) {
+    const set = !reduceMotion && gestures[mood];
+    gestureFace = FACE_VIEWER;
+    if (set) {
+      const gesture = set.list[set.next];
+      set.next = (set.next + 1) % set.list.length;
       if (current === gesture) gesture.reset(); else play(gesture, 0.2);
-      timer = Math.max(timer, gesture.getClip().duration);
+      timer = Math.max(timer, gesture.getClip().duration * gesture.repetitions);
+      gestureFace = MOODS[mood].face || FACE_VIEWER;
     } else {
       play(idle, 0.15);
       if (!reduceMotion) {
@@ -254,7 +261,7 @@ function start(stage) {
     if (text) say(text);
   }
   // now and then, instead of walking off after a rest, she does her mood's gesture (no speech bubble)
-  let restsSinceGesture = 0;
+  let restsSinceGesture = 1;
   function restGesture() {
     if (!gestures[mood] || ++restsSinceGesture < 2) return false;
     restsSinceGesture = 0;
@@ -400,11 +407,15 @@ function start(stage) {
       walk = mixer.clipAction(walkClip);
       idle = mixer.clipAction(idleClip);
       for (const name of Object.keys(MOODS)) {
-        const gestureClip = clip(`gesture_${name}`);
-        if (!gestureClip) continue;
-        gestures[name] = mixer.clipAction(gestureClip);
-        gestures[name].setLoop(THREE.LoopOnce, 1);
-        gestures[name].clampWhenFinished = true;      // hold the last pose until she blends back to idle
+        const list = [clip(`gesture_${name}`), clip(`gesture_${name}_2`)].filter(Boolean).map(gestureClip => {
+          const action = mixer.clipAction(gestureClip);
+          // a short looping move (the wave) is repeated so that it lasts about two seconds
+          const times = gestureClip.duration < 1.2 ? Math.ceil(2.2 / gestureClip.duration) : 1;
+          action.setLoop(times > 1 ? THREE.LoopRepeat : THREE.LoopOnce, times);
+          action.clampWhenFinished = true;            // hold the last pose until she blends back to idle
+          return action;
+        });
+        if (list.length) gestures[name] = { list, next: 0 };
       }
       model.position.x = 0;
       play(idle, 0);
