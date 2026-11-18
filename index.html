@@ -17,6 +17,11 @@
     <link rel="stylesheet" href="css/styles.css">
     <script src="js/scripts.js" defer></script>
     <script src="js/scene.js" defer></script>
+    <script type="importmap">
+      {"imports": {"three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+    </script>
+    <script type="module" src="js/character.js"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -64,6 +69,11 @@
             <img src="assets/img/profile.jpg" alt="Riju Das" width="1533" height="1533">
           </div>
           <div class="signal-orbit" aria-hidden="true"></div>
+        </div>
+
+        <div class="character-stage" aria-hidden="true" data-model="assets/character/riju_character.glb">
+          <canvas></canvas>
+          <p class="character-bubble" hidden></p>
         </div>
       </section>
 

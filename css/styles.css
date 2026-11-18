@@ -396,3 +396,14 @@ body::before {
 @media (prefers-reduced-motion: reduce) {
   .reveal { transform: none; }
 }
+
+/* walking character strip at the bottom of the hero (js/character.js) */
+.character-stage { grid-column: 1 / -1; position: relative; height: clamp(180px, 20vw, 250px); margin-top: calc(-1 * clamp(1rem, 3vw, 3rem)); opacity: 0; transition: opacity .6s ease; }
+.character-stage.is-ready { opacity: 1; }
+.character-stage::after { content: ""; position: absolute; right: 0; bottom: 6%; left: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--line) 12%, var(--line) 88%, transparent); pointer-events: none; }
+.character-stage canvas { display: block; width: 100%; height: 100%; }
+.character-stage.is-hover canvas { cursor: pointer; }
+.character-bubble { position: absolute; z-index: 1; margin: 0; padding: .5rem .85rem; transform: translate(-50%, calc(-100% - 10px)); border: 1px solid var(--edge); border-radius: 1rem; background: var(--white); box-shadow: var(--shadow); font: 600 .8rem var(--sans); color: var(--ink); white-space: nowrap; pointer-events: none; animation: bubble-in .25s ease; }
+.character-bubble::after { content: ""; position: absolute; left: 50%; bottom: -7px; width: 12px; height: 12px; transform: translateX(-50%) rotate(45deg); border-right: 1px solid var(--edge); border-bottom: 1px solid var(--edge); background: var(--white); }
+@keyframes bubble-in { from { opacity: 0; transform: translate(-50%, calc(-100% - 2px)); } }
+@media (max-width: 760px) { .character-stage { height: 170px; margin-top: 0; } }
