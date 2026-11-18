@@ -34,11 +34,13 @@ function start(stage) {
   camera.position.set(0, 0.18, distance);
   camera.lookAt(0, 0.02, 0);
 
-  scene.add(new THREE.HemisphereLight(0xfffdf7, 0xb9a98c, 1.55));
-  const key = new THREE.DirectionalLight(0xffffff, 1.9);
-  key.position.set(-2, 3, 4);
+  // mostly soft, even light so her colours read the way they were painted; the two
+  // directional lights only add a little shape
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xdccfbd, 2.3));
+  const key = new THREE.DirectionalLight(0xffffff, 1.05);
+  key.position.set(-1.5, 2.5, 4);
   scene.add(key);
-  const fill = new THREE.DirectionalLight(0xfff1e0, 0.55);
+  const fill = new THREE.DirectionalLight(0xfff4e6, 0.3);
   fill.position.set(3, 1.5, 2);
   scene.add(fill);
 
@@ -224,9 +226,14 @@ function start(stage) {
   function load() {
     if (requested) return;
     requested = true;
-    loader.load(modelUrl, gltf => {
+    const onLoad = gltf => {
       model = gltf.scene;
-      model.traverse(o => { if (o.isMesh) o.frustumCulled = false; });
+      const anisotropy = renderer.capabilities.getMaxAnisotropy();
+      model.traverse(o => {
+        if (!o.isMesh) return;
+        o.frustumCulled = false;
+        if (o.material.map) o.material.map.anisotropy = anisotropy;
+      });
       scene.add(model);
       mixer = new THREE.AnimationMixer(model);
       const clip = name => gltf.animations.find(a => a.name.toLowerCase() === name);
@@ -238,7 +245,15 @@ function start(stage) {
       play(idle, 0);
       stage.classList.add('is-ready');
       wake();
-    }, undefined, fail);
+    };
+    // a page may embed the model as base64 text (used by the private preview); the site loads the file
+    const inline = window.CHARACTER_GLB_BASE64;
+    if (inline) {
+      const bytes = Uint8Array.from(atob(inline), ch => ch.charCodeAt(0));
+      loader.parse(bytes.buffer, '', onLoad, fail);
+    } else {
+      loader.load(modelUrl, onLoad, undefined, fail);
+    }
   }
 
   new IntersectionObserver(entries => {
