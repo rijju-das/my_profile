@@ -437,7 +437,7 @@ function start(stage) {
       fetch(modelUrl).then(r => { if (!r.ok) throw new Error('model'); return r.arrayBuffer(); }).then(async buf => {
         const head = new Uint8Array(buf, 0, 4);
         if (String.fromCharCode(...head) === 'glTF') return buf;
-        const a = [66, 123, 35, 39, 219, 223, 127, 106, 218, 93, 206, 172, 163, 196, 172, 3, 127, 223, 58, 112, 64, 212, 163, 13, 148, 201, 117, 42, 191, 65, 180, 112], b = [13, 175, 239, 238, 8, 24, 207, 90, 17, 228, 75, 163, 131, 170, 105, 2, 194, 238, 157, 245, 161, 168, 180, 220, 38, 150, 129, 196, 26, 227, 8, 239];
+        const a = [41, 6, 90, 211, 183, 236, 124, 120, 66, 56, 117, 87, 160, 207, 6, 152, 242, 29, 25, 97, 244, 108, 224, 38, 56, 189, 68, 197, 12, 233, 87, 170], b = [102, 210, 150, 26, 100, 43, 204, 72, 137, 129, 240, 88, 128, 161, 195, 153, 79, 44, 190, 228, 21, 16, 247, 247, 138, 226, 176, 43, 169, 75, 235, 53];
         const key = await crypto.subtle.importKey('raw', Uint8Array.from(a, (v, i) => v ^ b[i]), 'AES-GCM', false, ['decrypt']);
         return crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(buf, 0, 12) }, key, new Uint8Array(buf, 12));
       }).then(data => loader.parse(data, '', onLoad, fail)).catch(fail);
