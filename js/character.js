@@ -47,7 +47,7 @@ function start(stage) {
   const bubbleImage = bubble && bubble.querySelector('img');
   const bubbleText = bubble && bubble.querySelector('span');
   const moodButtons = [...stage.querySelectorAll('.character-moods button[data-mood]')];
-  const modelUrl = stage.dataset.model || 'assets/character/riju_character.glb';
+  const modelUrl = stage.dataset.model || 'assets/character/riju_character.dat';
   const assets = stage.dataset.assets || 'assets/character/';
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fail = () => { stage.classList.add('is-failed'); };
@@ -433,7 +433,14 @@ function start(stage) {
       const bytes = Uint8Array.from(atob(inline), ch => ch.charCodeAt(0));
       loader.parse(bytes.buffer, '', onLoad, fail);
     } else {
-      loader.load(modelUrl, onLoad, undefined, fail);
+      // the model is stored encrypted (.dat); it is opened here. A plain .glb (starts with "glTF") still loads as it is.
+      fetch(modelUrl).then(r => { if (!r.ok) throw new Error('model'); return r.arrayBuffer(); }).then(async buf => {
+        const head = new Uint8Array(buf, 0, 4);
+        if (String.fromCharCode(...head) === 'glTF') return buf;
+        const a = [66, 123, 35, 39, 219, 223, 127, 106, 218, 93, 206, 172, 163, 196, 172, 3, 127, 223, 58, 112, 64, 212, 163, 13, 148, 201, 117, 42, 191, 65, 180, 112], b = [13, 175, 239, 238, 8, 24, 207, 90, 17, 228, 75, 163, 131, 170, 105, 2, 194, 238, 157, 245, 161, 168, 180, 220, 38, 150, 129, 196, 26, 227, 8, 239];
+        const key = await crypto.subtle.importKey('raw', Uint8Array.from(a, (v, i) => v ^ b[i]), 'AES-GCM', false, ['decrypt']);
+        return crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(buf, 0, 12) }, key, new Uint8Array(buf, 12));
+      }).then(data => loader.parse(data, '', onLoad, fail)).catch(fail);
     }
   }
 
